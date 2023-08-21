@@ -8,3 +8,6 @@ Instantiates a new container with duckietown gym.
 
 ## Reinforcement learning
 Run `python learning/reinforcement/pytorch/train_reinforcement.py` to train a model.
+
+## Simulator
+Run `xhost +` before starting the simulator. Then, inside the container, run `export DISPLAY=:0`.
