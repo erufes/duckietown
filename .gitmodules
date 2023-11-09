@@ -3,4 +3,4 @@
 	url = https://github.com/erufes/gym-duckietown
 [submodule "duckietown-world"]
 	path = duckietown-world
-	url = git@github.com:erufes/duckietown-world.git
+	url = https://github.com/erufes/duckietown-world
