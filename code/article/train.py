@@ -18,8 +18,11 @@ import numpy as np
 
 import multiprocessing
 
+from .custom_net import CustomCNN
+
 MODEL_PREFIX = "dqn"
 SEED = 123123123
+THREAD_COUNT = 4
 
 ckpt_callback = CheckpointCallback(
     save_freq=50_000,
@@ -27,7 +30,6 @@ ckpt_callback = CheckpointCallback(
     name_prefix=f"{MODEL_PREFIX}_ckpt",
     save_replay_buffer=True,
     save_vecnormalize=True,
-
 )
 
 def wrap(env):
@@ -43,6 +45,12 @@ def segment(env):
     env = ResizeObservation(env, 120)
     return env
 
+policy_kwargs = dict(
+    features_extractor_class=CustomCNN,
+    features_extractor_kwargs=dict(features_dim=3),
+)
+
+
 def train(id):
     print(f"Running train on {id}")
     env = make_vec_env("Duckietown-udem1-v0", n_envs=4, wrapper_class=wrap, seed=SEED)
@@ -55,6 +63,9 @@ def train(id):
         buffer_size=50000,
         tensorboard_log="./runs",
         learning_starts=10000,
+        seed=SEED,
+        policy_kwargs=policy_kwargs,
+        verbose=1
     )
 
     model.learn(
@@ -62,16 +73,14 @@ def train(id):
         callback=ckpt_callback,
         progress_bar=True,
         tb_log_name=f"{MODEL_PREFIX}_{id}",
+        
     )
     model.save(f"{MODEL_PREFIX}_{id}_duck")
     print(f"Thread {id} done.")
 
 procs: List[multiprocessing.Process] = []
-
-procs.append(multiprocessing.Process(target=train, args=[1]))
-procs.append(multiprocessing.Process(target=train, args=[2]))
-procs.append(multiprocessing.Process(target=train, args=[3]))
-procs.append(multiprocessing.Process(target=train, args=[4]))
+for i in range(1, THREAD_COUNT+1):
+    procs.append(multiprocessing.Process(target=train, args=[i]))
 
 for p in procs:
     p.start()
