@@ -10,9 +10,10 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 from gymnasium.wrappers.resize_observation import ResizeObservation
 
 from gymnasium.wrappers.frame_stack import FrameStack
-from gym_duckietown.wrappers import DiscreteWrapper, CropObservation, SegmentMiddleLaneWrapper, SegmentRemoveExtraInfo, SegmentLaneWrapper
+from gym_duckietown.wrappers import DiscreteWrapper, CropObservation, SegmentMiddleLaneWrapper, SegmentRemoveExtraInfo, SegmentLaneWrapper, TransposeToConv2d
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env.vec_frame_stack import VecFrameStack
+from gymnasium.wrappers.frame_stack import FrameStack
 
 import numpy as np
 
@@ -20,7 +21,7 @@ import multiprocessing
 
 from .custom_net import CustomCNN
 
-MODEL_PREFIX = "dqn"
+MODEL_PREFIX = "dqn_stack"
 SEED = 123123123
 THREAD_COUNT = 4
 
@@ -53,7 +54,8 @@ policy_kwargs = dict(
 
 def train(id):
     print(f"Running train on {id}")
-    env = make_vec_env("Duckietown-udem1-v0", n_envs=4, wrapper_class=wrap, seed=SEED)
+    env = make_vec_env("Duckietown-udem1-v0", n_envs=5, wrapper_class=wrap, seed=SEED)
+    env = VecFrameStack(env, 5)
     model = DQN(
         policy="CnnPolicy",
         batch_size=32,
@@ -65,7 +67,7 @@ def train(id):
         learning_starts=10000,
         seed=SEED,
         policy_kwargs=policy_kwargs,
-        verbose=1
+        verbose=1,
     )
 
     model.learn(
@@ -73,7 +75,7 @@ def train(id):
         callback=ckpt_callback,
         progress_bar=True,
         tb_log_name=f"{MODEL_PREFIX}_{id}",
-        
+
     )
     model.save(f"{MODEL_PREFIX}_{id}_duck")
     print(f"Thread {id} done.")
