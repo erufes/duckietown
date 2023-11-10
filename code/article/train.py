@@ -1,7 +1,5 @@
 # For env register
-import threading
 import gym_duckietown
-import gymnasium
 
 from typing import List
 
@@ -9,29 +7,18 @@ from stable_baselines3 import DQN
 from stable_baselines3.common.callbacks import CheckpointCallback
 from gymnasium.wrappers.resize_observation import ResizeObservation
 
-from gymnasium.wrappers.frame_stack import FrameStack
 from gym_duckietown.wrappers import DiscreteWrapper, CropObservation, SegmentMiddleLaneWrapper, SegmentRemoveExtraInfo, SegmentLaneWrapper, TransposeToConv2d
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env.vec_frame_stack import VecFrameStack
-from gymnasium.wrappers.frame_stack import FrameStack
 
-import numpy as np
 
 import multiprocessing
 
 from .custom_net import CustomCNN
 
-MODEL_PREFIX = "dqn_stack"
-SEED = 123123123
+MODEL_PREFIX = "dqn_customnet_v2_stack_sm"
+SEED = 2**30 + 8394
 THREAD_COUNT = 4
-
-ckpt_callback = CheckpointCallback(
-    save_freq=50_000,
-    save_path="./checkpoints/",
-    name_prefix=f"{MODEL_PREFIX}_ckpt",
-    save_replay_buffer=True,
-    save_vecnormalize=True,
-)
 
 def wrap(env):
     env = DiscreteWrapper(env)
@@ -39,11 +26,11 @@ def wrap(env):
     return env
 
 def segment(env):
-    env = CropObservation(env, 140)
+    env = CropObservation(env, 120)
     env = SegmentLaneWrapper(env)
     env = SegmentMiddleLaneWrapper(env)
     env = SegmentRemoveExtraInfo(env)
-    env = ResizeObservation(env, 120)
+    env = ResizeObservation(env, (40, 80))
     return env
 
 policy_kwargs = dict(
@@ -51,11 +38,11 @@ policy_kwargs = dict(
     features_extractor_kwargs=dict(features_dim=3),
 )
 
-
 def train(id):
-    print(f"Running train on {id}")
-    env = make_vec_env("Duckietown-udem1-v0", n_envs=5, wrapper_class=wrap, seed=SEED)
+    print(f"Running train on process {id}")
+    env = make_vec_env("Duckietown-udem1-v0", n_envs=1, wrapper_class=wrap, seed=SEED + 100 *id)
     env = VecFrameStack(env, 5)
+
     model = DQN(
         policy="CnnPolicy",
         batch_size=32,
@@ -67,7 +54,17 @@ def train(id):
         learning_starts=10000,
         seed=SEED,
         policy_kwargs=policy_kwargs,
-        verbose=1,
+        verbose=2,
+        optimize_memory_usage=True,
+        replay_buffer_kwargs={"handle_timeout_termination": False}
+    )
+
+    ckpt_callback = CheckpointCallback(
+    save_freq=50_000,
+    save_path="./checkpoints/",
+    name_prefix=f"{MODEL_PREFIX}_{id}_ckpt",
+    save_replay_buffer=True,
+    save_vecnormalize=True,
     )
 
     model.learn(
