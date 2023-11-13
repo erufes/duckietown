@@ -89,12 +89,13 @@ def train(id):
     print(f"Thread {id} done.")
 
 
-procs: List[multiprocessing.Process] = []
-for i in range(1, THREAD_COUNT + 1):
-    procs.append(multiprocessing.Process(target=train, args=[i]))
+if __name__ == "__main__":
+    procs: List[multiprocessing.Process] = []
+    for i in range(1, THREAD_COUNT + 1):
+        procs.append(multiprocessing.Process(target=train, args=[i]))
 
-for p in procs:
-    p.start()
+    for p in procs:
+        p.start()
 
-for p in procs:
-    p.join()
+    for p in procs:
+        p.join()
