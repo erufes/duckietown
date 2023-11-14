@@ -32,11 +32,12 @@ def wrap(env):
 
 
 def segment(env):
-    # env = CropObservation(env, 240)
-    # env = SegmentLaneWrapper(env)
-    # env = SegmentMiddleLaneWrapper(env)
-    # env = SegmentRemoveExtraInfo(env)
-    env = ResizeObservation(env, (384, 1920))
+    env = CropObservation(env, 240)
+    env = SegmentLaneWrapper(env)
+    env = SegmentMiddleLaneWrapper(env)
+    env = SegmentRemoveExtraInfo(env)
+    env = ResizeObservation(env, (384, 640))
+    env = TransposeToConv2d(env)
     return env
 
 
@@ -45,7 +46,12 @@ SEED = 123
 
 def train(id):
     print(f"Running train on process {id}")
-    env = make_vec_env("Duckietown-udem1-v0_d", n_envs=1, wrapper_class=wrap, seed=SEED)
+    env = make_vec_env(
+        "Duckietown-udem1-v0_pietroluongo_train",
+        n_envs=1,
+        wrapper_class=wrap,
+        seed=SEED,
+    )
     env = VecFrameStack(env, 5)
     env.reset()
     # Action is 0, 1, or 2
@@ -78,13 +84,11 @@ def train(id):
         for i in range(0, 5):
             low = 3 * i
             high = 3 * i + 3
-            single_obs = obs[0, :, :, low:high]
-            print(single_obs.shape)
-            surf = pygame.surfarray.make_surface(single_obs)
+            single_obs = obs[0, low:high, :, :]
+            surf = pygame.surfarray.make_surface(single_obs.transpose(2, 1, 0))
             display.blit(surf, (384 * i, 0))
         pygame.display.update()
 
-        env.render()
         if done:
             print("Done!")
             env.reset()

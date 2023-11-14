@@ -13,10 +13,11 @@ from gym_duckietown.wrappers import (
     SegmentMiddleLaneWrapper,
     SegmentRemoveExtraInfo,
     SegmentLaneWrapper,
+    TransposeToConv2d,
 )
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env.vec_frame_stack import VecFrameStack
-
+from stable_baselines3.common.monitor import Monitor
 
 import multiprocessing
 
@@ -39,6 +40,8 @@ def segment(env):
     env = SegmentMiddleLaneWrapper(env)
     env = SegmentRemoveExtraInfo(env)
     env = ResizeObservation(env, (40, 80))
+    env = TransposeToConv2d(env)
+    env = Monitor(env)
     return env
 
 
