@@ -34,7 +34,7 @@ def wrap(env):
 
 
 def segment(env):
-    env = CropObservation(env, 240)
+    env = CropObservation(env, 300)
     env = SegmentLaneWrapper(env)
     env = SegmentMiddleLaneWrapper(env)
     env = SegmentRemoveExtraInfo(env)
@@ -51,7 +51,10 @@ policy_kwargs = dict(
 def train(id):
     print(f"Running train on process {id}")
     env = make_vec_env(
-        "Duckietown-udem1-v0_d", n_envs=1, wrapper_class=wrap, seed=SEED + id
+        "Duckietown-udem1-v0_pietroluongo_train",
+        n_envs=1,
+        wrapper_class=wrap,
+        seed=SEED + id,
     )
     env = VecFrameStack(env, 5)
 

@@ -30,7 +30,7 @@ def wrap(env):
 
 
 def segment(env):
-    env = CropObservation(env, 240)
+    env = CropObservation(env, 300)
     env = SegmentLaneWrapper(env)
     env = SegmentMiddleLaneWrapper(env)
     env = SegmentRemoveExtraInfo(env)
@@ -40,7 +40,7 @@ def segment(env):
 
 def train(id):
     print(f"Running train on process {id}")
-    env = gymnasium.make("Duckietown-udem1-v0_d")
+    env = gymnasium.make("Duckietown-4way-v0_pietroluongo_train")
     env = DiscreteDifferentialWrapper(env)
     env = wrap(env)
     env.reset(seed=123)
