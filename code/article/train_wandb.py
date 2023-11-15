@@ -23,7 +23,7 @@ from typing import List
 MODEL_PREFIX = "dqn_wandb_cnet_wrapped_stack"
 SEED = 2**30 + 89023
 THREAD_COUNT = 4
-
+GROUP_NAME = "dqn_wandb_cnet_wrapped_stack"
 
 policy_kwargs = dict(
     features_extractor_class=CustomCNN,
@@ -51,6 +51,8 @@ def train(id):
     run = wandb.init(
         project="pgzitos",
         config=config,
+        group=GROUP_NAME,
+        job_type="train",
         sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
     )
 
