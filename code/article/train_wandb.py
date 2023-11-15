@@ -1,6 +1,7 @@
 import gym_duckietown
 import gymnasium as gym
 import wandb
+import os
 from wandb.integration.sb3 import WandbCallback
 
 from stable_baselines3 import DQN
@@ -21,9 +22,9 @@ import multiprocessing
 from typing import List
 
 MODEL_PREFIX = "dqn_wandb_cnet_wrapped_stack"
-SEED = 2**30 + 89023
+SEED = os.getpid()
 THREAD_COUNT = 4
-GROUP_NAME = "dqn_wandb_cnet_wrapped_stack"
+GROUP_NAME = "dqn_wandb_cnet_wrapped_stack_2"
 
 policy_kwargs = dict(
     features_extractor_class=CustomCNN,
@@ -47,12 +48,17 @@ def train(id):
         "replay_buffer_kwargs": {"handle_timeout_termination": False},
         "policy_kwargs": policy_kwargs,
     }
-
+    settings = wandb.Settings(
+        job_name="dqn_train_multiple"
+    )
     run = wandb.init(
         project="pgzitos",
         config=config,
         group=GROUP_NAME,
         job_type="train",
+        settings=settings,
+        monitor_gym=True,
+        tags=["CustomNet", "DQN", "NewWrappers", "Parallel", "Stacked"]
         sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
     )
 
@@ -104,6 +110,7 @@ def train(id):
     )
     model.save(f"{MODEL_PREFIX}_{id}_duck")
     print(f"Thread {id} done.")
+    wandb.log_artifact(artifact_or_path=f"{MODEL_PREFIX}_{id}_duck", name=f"{MODEL_PREFIX}_{id}", type="model")
     run.finish()
 
 
