@@ -20,7 +20,7 @@ A rede usada no treinamento está definida em `/gym-duckietown/custom_net.py`
 
 Pra rodar o script remotamente, precisa ter uma tela (mesmo que seja virtual). Pra isso, tem os seguintes comandos:
 
-```Xvfb :0 -screen 0 1024x768x24 -ac +extension GLX +render -noreset &> xvfb.log &```
+```Xvfb :1 -screen 0 1024x768x24 -ac +extension GLX +render -noreset &> xvfb.log &```
 
 ```export DISPLAY=:0```
 
