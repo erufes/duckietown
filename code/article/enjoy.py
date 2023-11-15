@@ -18,6 +18,8 @@ from stable_baselines3.common.vec_env.vec_frame_stack import VecFrameStack
 
 import cv2
 
+MODEL_NAME = "dqn_customnet_v2_stack_sm_tested_4_duck"
+
 
 def wrap(env):
     env = DiscreteDifferentialWrapper(env)
@@ -50,7 +52,7 @@ def enjoy():
     display = pygame.display.set_mode((640 + 400, 480))
     font = pygame.font.SysFont("Arial", 24)
 
-    model = DQN.load("dqn_customnet_v2_stack_sm_tested_4_duck", env=env)
+    model = DQN.load(MODEL_NAME, env=env)
 
     ext_obs = view_env.reset(seed=seed)
 

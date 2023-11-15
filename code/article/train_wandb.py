@@ -18,7 +18,7 @@ from stable_baselines3.common.vec_env.vec_frame_stack import VecFrameStack
 from stable_baselines3.common.monitor import Monitor
 from gym_duckietown.custom_net import CustomCNN
 
-MODEL_PREFIX = "dqn_wandb"
+MODEL_PREFIX = "dqn_cnet_wrapped_stack"
 SEED = 2**30 + 8394
 
 
