@@ -102,7 +102,8 @@ def train(id):
             verbose=2,
         ),
     )
-
+    model.save(f"{MODEL_PREFIX}_{id}_duck")
+    print(f"Thread {id} done.")
     run.finish()
 
 
